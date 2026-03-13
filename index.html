@@ -12,10 +12,44 @@
     <link rel="apple-touch-icon" href="/DriveLog/pwa-192x192.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <title>Car Expense Tracker</title>
-    <script type="module" crossorigin src="/DriveLog/assets/index-JGXpFFWP.js"></script>
+    <script type="module" crossorigin src="/DriveLog/assets/index-Bx2oKkDy.js"></script>
     <link rel="stylesheet" crossorigin href="/DriveLog/assets/index-CDcef7qi.css">
   <link rel="manifest" href="/DriveLog/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/DriveLog/registerSW.js"></script></head>
   <body>
-    <div id="app"></div>
+    <div id="app"></div>
+    <script>
+      // Supabase OAuth con hash router: i token arrivano in #access_token=...
+      // Li intercettiamo e li passiamo a Supabase via sessionStorage prima che Vue si avvii
+      ;(function() {
+        var hash = window.location.hash
+        if (hash && hash.includes('access_token')) {
+          // Estrai i parametri dall'hash e mettili come search params temporanei
+          // Supabase JS legge da window.location.hash con detectSessionInUrl
+          // Ma con hash router dobbiamo pulire l'hash dopo
+          try {
+            var params = new URLSearchParams(hash.substring(1))
+            var accessToken = params.get('access_token')
+            var refreshToken = params.get('refresh_token')
+            var expiresIn = params.get('expires_in')
+            var tokenType = params.get('token_type')
+            if (accessToken) {
+              // Salva i token in sessionStorage nel formato che Supabase JS usa
+              var projectRef = 'spcbihreqyzldrwxbsru'
+              var storageKey = 'sb-' + projectRef + '-auth-token'
+              var expiresAt = Math.floor(Date.now() / 1000) + parseInt(expiresIn || '3600')
+              sessionStorage.setItem(storageKey, JSON.stringify({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                expires_at: expiresAt,
+                expires_in: parseInt(expiresIn || '3600'),
+                token_type: tokenType || 'bearer'
+              }))
+              // Pulisci l'hash per evitare conflitti con il router Vue
+              window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/')
+            }
+          } catch(e) {}
+        }
+      })()
+    </script>
   </body>
 </html>
