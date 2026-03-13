@@ -37,13 +37,15 @@
               var projectRef = 'spcbihreqyzldrwxbsru'
               var storageKey = 'sb-' + projectRef + '-auth-token'
               var expiresAt = Math.floor(Date.now() / 1000) + parseInt(expiresIn || '3600')
-              sessionStorage.setItem(storageKey, JSON.stringify({
+              var tokenData = JSON.stringify({
                 access_token: accessToken,
                 refresh_token: refreshToken,
                 expires_at: expiresAt,
                 expires_in: parseInt(expiresIn || '3600'),
                 token_type: tokenType || 'bearer'
-              }))
+              })
+              localStorage.setItem(storageKey, tokenData)
+              sessionStorage.setItem(storageKey, tokenData)
               // Pulisci l'hash per evitare conflitti con il router Vue
               window.history.replaceState(null, '', window.location.pathname + window.location.search + '#/')
             }
